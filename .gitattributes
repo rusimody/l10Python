@@ -1,0 +1,51 @@
+.gitattributes	text
+.gitignore	text
+.hgignore
+.bzrignore
+
+*.c		text
+*.h		text
+*.S		text
+*.asm		text
+*.py		text
+*.sh		text
+*.bat		text
+*.js		text
+
+*.org		text
+*.txt		text
+*.TXT		text
+*.rst		text
+
+README		text
+ChangeLog	text
+Makefile.pre.in	text
+configure	text
+install-sh	text
+aclocal.m4	text
+
+*.bat		eol=crlf
+*.sln		eol=crlf
+*.vcproj	eol=crlf
+
+*.pdf		binary
+*.png		binary
+*.tiff		binary
+*.webp		binary 
+*.exr		binary 
+*.jpg		binary 
+*.pbm		binary 
+*.xbm		binary 
+*.gif		binary 
+*.bmp		binary 
+*.ras		binary
+*.sgi		binary
+*.psd		binary
+*.au		binary
+*.aiff		binary
+*.wav		binary
+
+*.tar		binary
+*.db		binary
+*.zip		binary
+*.exe		binary
