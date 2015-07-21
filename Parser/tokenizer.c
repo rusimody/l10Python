@@ -1352,123 +1352,105 @@ static int uni2Num(int ch)
     return -1;
 
 }
-int advait=0;
+
 static int unicodify(int c,int *status, struct tok_state *tok)
 {
 
-  int bytelim=1;
-  int mask=63; //00111111
+    int bytelim=1;
+    int mask=63; //00111111
 
-  unsigned long int temp=0;
-  unsigned long int temp2=0;
-  unsigned int tempfinal=0;
+    unsigned long int temp=0;
+    unsigned long int temp2=0;
+    unsigned int tempfinal=0;
 
-  int i=0;
-  int firstpass=1;
-  int array[3];
-  int tempad,tempad1;
-  int finalresult = 48; //ASCII for Zero
+    int i=0;
+    int firstpass=1;
+    int array[3];
+    int finalresult = 48; //ASCII for Zero
 
 
-  if (c < 128)
+    if (c < 128)
     {
-      return c;
+        return c;
     }
-  else if (c == 224)
+    else if (c == 224)
     {
-      //printf("3 bytes!\n");
-      bytelim = 3;
-      mask=15; //0000 1111
+        //printf("3 bytes!\n");
+        bytelim = 3;
+        mask=15; //0000 1111
 
-      array[0] = c;
-      array[1] = tok_nextc(tok);
-      if(array[1] != 165 && array[1] != 167)
-	return array[1];
-       array[2] = tok_nextc(tok);
-      if (c< 166 || c > 175)
-	return array[2];
-    }       
-      if(c  == 226)
-      {
-           array[1] = tok_nextc(tok);
-           array[2] = tok_nextc(tok);
-	   if(tempad1 == 137) 
-          {
-         
-	    advait=1;    
-               if( array[2]==160) //≠ Operator 
-               array[0] = '!';
+        array[0] = c;
+        array[1] = tok_nextc(tok);
+        if(array[1] != 165 && array[1] != 167)
+            return array[1];
+        array[2] = tok_nextc(tok);
+        if (c< 166 || c > 175)
+            return array[2];
+    }
+
+    if(c  == 226)
+    {
+        array[1] = tok_nextc(tok);
+        array[2] = tok_nextc(tok);
+        if(array[1] == 137)
+        {
+              *status = 1;
+              if( array[2]==160) //≠ Operator
+                  array[0] = '!';
               if(array[2]==164) // ≤  Operator
-		array[0] = '<';
+                  array[0] = '<';
               if(array[2]==165) // ≤  Operator
-		array[0] = '>';  
+		array[0] = '>';
               return array[0];
-          }
-          else if(array[1] == 136)
-          {
-              if (array[2] == 136) //∈ Operator
-                  array[0] = 105; //dummy value
-              else if (array[2] == 170) //∪ Operator
-                  array[0] = 105; //dummy value
-              else if (array[2] == 169 )//∩ Operator
-                  array[0] = 105; //dummy value
-              /*else if (array[2] == 133) //
-                  c=105;*/
-              return array[0];
-          }
-
-      
-
+        }
+        else if(array[1] == 136)
+        {
+            if (array[2] == 136) //∈ Operator
+                array[0] = 105; //dummy value
+            else if (array[2] == 170) //∪ Operator
+                array[0] = 105; //dummy value
+            else if (array[2] == 169 )//∩ Operator
+                array[0] = 105; //dummy value
+            /*else if (array[2] == 133) //
+              c=105;*/
+            return array[0];
+        }
     }
-  else if (c >= 192)
+    else if (c >= 192)
     {
-      //printf("2 bytes!\n");
-      bytelim = 2;
-      mask=31; //0001 1111
-
-      array[0] = c;
-      array[1] = tok_nextc(tok);
+        //printf("2 bytes!\n");
+        bytelim = 2;
+        mask=31; //0001 1111
+        array[0] = c;
+        array[1] = tok_nextc(tok);
     }
-  else if ( c >= 128)
+    else if ( c >= 128)
     {
-      //printf("One byte!\n");
-      //0011 1111
-
-      array[0] = c;
+        //printf("One byte!\n");
+        //0011 1111
+        array[0] = c;
     }
 
-  //extract codepoint
-  for(i=0, temp = array[0], firstpass = 1; i < bytelim-1; i++)
+    //extract codepoint
+    for(i=0, temp = array[0], firstpass = 1; i < bytelim-1; i++)
     {
-
-      temp2 = array[i+1];
-
-      if(firstpass == 1)
+        temp2 = array[i+1];
+        if(firstpass == 1)
 	{
-	  temp = temp & mask;
-	  mask = 63;
-	  firstpass = 0;
-
+            temp = temp & mask;
+            mask = 63;
+            firstpass = 0;
 	}
 
-      temp2 = temp2 & mask;
-
-      temp = (temp << 6) | temp2;
-
-
-      tempfinal = temp;
+        temp2 = temp2 & mask;
+        temp = (temp << 6) | temp2;
+        tempfinal = temp;
     }
-
-  //printf("The codepoint in decimal is %u\n", tempfinal);
-  //printf("The codepoint in hex is %x\n", tempfinal);
-
-  finalresult = (int)uni2Num(tempfinal) + 48;
-
-  //printf("The value is %d\n", finalresult);
-
-  return finalresult;
-
-
+    //printf("The codepoint in decimal is %u\n", tempfinal);
+    //printf("The codepoint in hex is %x\n", tempfinal);
+    finalresult = (int)uni2Num(tempfinal) + 48;
+    //printf("The value is %d\n", finalresult);
+    return finalresult;
 }
 
 static int
@@ -1481,8 +1463,8 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
     struct tok_state ahead_tok;
     char *ahead_tok_start = NULL, *ahead_top_end = NULL;
     int ahead_tok_kind;
-    int *status  ,sta=0;//  ≠ operator.  
-      status = &sta;
+    int status = 0;//  ≠ operator.
+
     *p_start = *p_end = NULL;
   nextline:
     tok->start = NULL;
@@ -1606,7 +1588,7 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
     /* Identifier (most frequent token!) */
     nonascii = 0;
 
-    c = unicodify(c,status,tok);
+    c = unicodify(c,&status,tok);
 
     if (is_potential_identifier_start(c)) {
         /* Process b"", r"", u"", br"" and rb"" */
@@ -1714,7 +1696,7 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
     /* Period or number starting with period? */
     if (c == '.') {
         c = tok_nextc(tok);
-	c = unicodify(c,status, tok);
+	c = unicodify(c,&status, tok);
         if (isdigit(c)) {
             goto fraction;
         } else if (c == '.') {
@@ -1748,7 +1730,7 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
 
                 /* Hex */
                 c = tok_nextc(tok);
-		c = unicodify(c,status, tok);
+		c = unicodify(c,&status, tok);
                 if (!isxdigit(c)) {
                     tok->done = E_TOKEN;
                     tok_backup(tok, c);
@@ -1756,13 +1738,13 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
                 }
                 do {
                     c = tok_nextc(tok);
-		    c = unicodify(c,status, tok);
+		    c = unicodify(c,&status, tok);
                 } while (isxdigit(c));
             }
             else if (c == 'o' || c == 'O') {
                 /* Octal */
                 c = tok_nextc(tok);
-		c = unicodify(c,status, tok);
+		c = unicodify(c,&status, tok);
 
                 if (c < '0' || c >= '8') {
                     tok->done = E_TOKEN;
@@ -1771,13 +1753,13 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
                 }
                 do {
                     c = tok_nextc(tok);
-		    c = unicodify(c,status, tok);
+		    c = unicodify(c,&status, tok);
                 } while ('0' <= c && c < '8');
             }
             else if (c == 'b' || c == 'B') {
                 /* Binary */
                 c = tok_nextc(tok);
-		c = unicodify(c,status, tok);
+		c = unicodify(c,&status, tok);
                 if (c != '0' && c != '1') {
                     tok->done = E_TOKEN;
                     tok_backup(tok, c);
@@ -1785,7 +1767,7 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
                 }
                 do {
                     c = tok_nextc(tok);
-		    c = unicodify(c,status, tok);
+		    c = unicodify(c,&status, tok);
                 } while (c == '0' || c == '1');
             }
             else {
@@ -1815,7 +1797,7 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
             /* Decimal */
             do {
                 c = tok_nextc(tok);
-		c = unicodify(c,status, tok);
+		c = unicodify(c,&status, tok);
             } while (isdigit(c));
             {
                 /* Accept floating point numbers. */
@@ -1824,7 +1806,7 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
                     /* Fraction */
                     do {
                         c = tok_nextc(tok);
-			c = unicodify(c,status,tok);
+			c = unicodify(c,&status,tok);
                     } while (isdigit(c));
                 }
                 if (c == 'e' || c == 'E') {
@@ -1833,7 +1815,7 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
                     e = c;
                     /* Exponent part */
                     c = tok_nextc(tok);
-		    c = unicodify(c,status, tok);
+		    c = unicodify(c,&status, tok);
                     if (c == '+' || c == '-') {
                         c = tok_nextc(tok);
                         if (!isdigit(c)) {
@@ -1850,7 +1832,7 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
                     }
                     do {
                         c = tok_nextc(tok);
-			c = unicodify(c,status,tok);
+			c = unicodify(c,&status,tok);
                     } while (isdigit(c));
                 }
                 if (c == 'j' || c == 'J')
@@ -1929,12 +1911,11 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
     /* Check for two-character token */
     {
         int c2, token;
-        if ( advait)
+        if (status)
         {
- 	  // c = 33;
+            c = 33;
             c2 = 61;
         }
-
         else
             c2 = tok_nextc(tok);
         token = PyToken_TwoChars(c, c2);
