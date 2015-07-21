@@ -1338,85 +1338,25 @@ verify_identifier(struct tok_state *tok)
 
 
 
-static double uni2Num(int ch)
+static int uni2Num(int ch)
 {
-    switch (ch) {
-    case 0x0030:
-    case 0x0660:
-    case 0x06F0:
-    case 0x07C0:
-    case 0x0966:
-    case 0x09E6:
-        return (double) 0.0;
-    case 0x0031:
-    case 0x00B9:
-    case 0x0661:
-    case 0x06F1:
-    case 0x07C1:
-    case 0x0967:
-    case 0x09E7:
-        return (double) 1.0;
-    case 0x0032:
-    case 0x00B2:
-    case 0x0662:
-    case 0x06F2:
-    case 0x07C2:
-    case 0x0968:
-    case 0x09E8:
-        return (double) 2.0;
-    case 0x0033:
-    case 0x00B3:
-    case 0x0663:
-    case 0x06F3:
-    case 0x07C3:
-    case 0x0969:
-    case 0x09E9:
-        return (double) 3.0;
-    case 0x0034:
-    case 0x0664:
-    case 0x06F4:
-    case 0x07C4:
-    case 0x096A:
-    case 0x09EA:
-        return (double) 4.0;
-    case 0x0035:
-    case 0x0665:
-    case 0x06F5:
-    case 0x07C5:
-    case 0x096B:
-    case 0x09EB:
-        return (double) 5.0;
-    case 0x0036:
-    case 0x0666:
-    case 0x06F6:
-    case 0x07C6:
-    case 0x096C:
-    case 0x09EC:
-        return (double) 6.0;
-    case 0x0037:
-    case 0x0667:
-    case 0x06F7:
-    case 0x07C7:
-    case 0x096D:
-    case 0x09ED:
-        return (double) 7.0;
-    case 0x0038:
-    case 0x0668:
-    case 0x06F8:
-    case 0x07C8:
-    case 0x096E:
-    case 0x09EE:
-        return (double) 8.0;
-    case 0x0039:
-    case 0x0669:
-    case 0x06F9:
-    case 0x07C9:
-    case 0x096F:
-    case 0x09EF:
-           return (double) 9.0;
-
+  if (ch >= 0x966 && ch <= 0x96F) //Hindi - 3bytes
+    {
+      ch = ch - 0x966;
+      return ch;
     }
-    return -1.0;
+  else if(ch >= 0x660 && ch <= 0x669) //Arabic Indic - 3 bytes
+    {
+      ch = ch - 0x660;
+      return ch;
+    }
+  else if(ch >= 0x9E6 && ch <= 0x9EF) //Bengali - 3 bytes
+    {
+      ch = ch - 0x9E6;
+      return ch;
+    }
+  return -1;
+  
 }
 
 
@@ -1494,7 +1434,7 @@ static int unicodify(int c, struct tok_state *tok)
   //printf("The codepoint in decimal is %u\n", tempfinal);
   //printf("The codepoint in hex is %x\n", tempfinal);
 
-  finalresult = (int)uni2Num(tempfinal) + 48;
+  finalresult = uni2Num(tempfinal) + 48;
      
   //printf("The value is %d\n", finalresult);
 
