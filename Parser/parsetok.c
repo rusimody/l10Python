@@ -346,12 +346,27 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
                 }
             }
 
-            else if(str[0] == -30 && str[1] == -119 && str[2]==-96 )
+            else if(str[0] == -30 && str[1] == -119 && str[2]==-96 )//not equal to operator
             {
-                str[manydigit++] = 33;
+                str[manydigit++] = '!';
                 str[manydigit++] = 61;
+                type = NOTEQUAL;
                 break;
             }
+           else if(str[0] == -30 && str[1] == -119 && str[2]==-92 )
+	     {
+                  str[manydigit++] = '<';
+                  str[manydigit++] = 61;
+                  type = 29; 
+                    break;
+             } 
+            else if(str[0] == -30 && str[1] == -119 && str[2]==-91 )
+	     {
+                  str[manydigit++] = '>';
+                  str[manydigit++] = 61;
+                  type =30;
+                    break;
+             }   
             tempchar = str[counter];
             tempchar = tempchar & 0x000000FF;
 

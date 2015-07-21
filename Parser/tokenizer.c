@@ -1352,7 +1352,7 @@ static int uni2Num(int ch)
     return -1;
 
 }
-
+int advait=0;
 static int unicodify(int c,int *status, struct tok_state *tok)
 {
 
@@ -1366,7 +1366,7 @@ static int unicodify(int c,int *status, struct tok_state *tok)
   int i=0;
   int firstpass=1;
   int array[3];
-
+  int tempad,tempad1;
   int finalresult = 48; //ASCII for Zero
 
 
@@ -1374,7 +1374,7 @@ static int unicodify(int c,int *status, struct tok_state *tok)
     {
       return c;
     }
-  else if (c >= 224)
+  else if (c == 224)
     {
       //printf("3 bytes!\n");
       bytelim = 3;
@@ -1386,13 +1386,22 @@ static int unicodify(int c,int *status, struct tok_state *tok)
 	return array[1];
        array[2] = tok_nextc(tok);
       if (c< 166 || c > 175)
-	return array[2];       
-      if(array[0] == 226)
+	return array[2];
+    }       
+      if(c  == 226)
       {
-          if(array[1] == 137  && array[2]==160) //≠ Operator
+           array[1] = tok_nextc(tok);
+           array[2] = tok_nextc(tok);
+	   if(tempad1 == 137) 
           {
-              status = 1;
-              array[0] = 33;
+         
+	    advait=1;    
+               if( array[2]==160) //≠ Operator 
+               array[0] = '!';
+              if(array[2]==164) // ≤  Operator
+		array[0] = '<';
+              if(array[2]==165) // ≤  Operator
+		array[0] = '>';  
               return array[0];
           }
           else if(array[1] == 136)
@@ -1408,7 +1417,7 @@ static int unicodify(int c,int *status, struct tok_state *tok)
               return array[0];
           }
 
-      }
+      
 
     }
   else if (c >= 192)
@@ -1472,8 +1481,8 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
     struct tok_state ahead_tok;
     char *ahead_tok_start = NULL, *ahead_top_end = NULL;
     int ahead_tok_kind;
-    int status = 0; //For the ≠ operator.
-
+    int *status  ,sta=0;//  ≠ operator.  
+      status = &sta;
     *p_start = *p_end = NULL;
   nextline:
     tok->start = NULL;
@@ -1920,9 +1929,9 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
     /* Check for two-character token */
     {
         int c2, token;
-        if (status)
+        if ( advait)
         {
-            c = 33;
+ 	  // c = 33;
             c2 = 61;
         }
 
