@@ -1,4 +1,3 @@
-
 /* Parser-tokenizer link implementation */
 
 #include "pgenheaders.h"
@@ -185,26 +184,24 @@ warn(const char *msg, const char *filename, int lineno)
 static int parse_uni2Num(int ch)
 {
 
-  if (ch >= 0x966 && ch <= 0x96F) //Devanagri - 3 bytes
+    if (ch >= 0x966 && ch <= 0x96F) //Devanagri - 3 bytes
     {
-      ch = ch - 0x966;
-      return ch;
+        ch = ch - 0x966;
+        return ch;
     }
-  else if(ch >= 0x660 && ch <= 0x669) //Arabic Indic - 3 bytes
+    else if(ch >= 0x660 && ch <= 0x669) //Arabic Indic - 3 bytes
     {
-      ch = ch - 0x660;
-      return ch;
+        ch = ch - 0x660;
+        return ch;
     }
-  else if(ch >= 0x9E6 && ch <= 0x9EF) //Bengali - 3 bytes
+    else if(ch >= 0x9E6 && ch <= 0x9EF) //Bengali - 3 bytes
     {
-      ch = ch - 0x9E6;
-      return ch;
+        ch = ch - 0x9E6;
+        return ch;
     }
-  return -1;
-  
+    return -1;
+
 }
-
-
 
 
 static node *
@@ -231,27 +228,20 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
         size_t len;
         char *str;
         int col_offset;
-
-
 	int counter=0;
 	int i = 0;
-	
-	int manydigit=0;
-
 	int tempchar=0;
-
 	int bytelim=1;
 	int mask=63;
-
 	unsigned long int temp=0;
 	unsigned long int temp2=0;
 	unsigned int tempfinal=0;
-
 	int firstpass=1;
 	int array[3];
 	int nonascii=0;
 	int finalresult=0;
-
+        int flag = 0;
+        int manydigit = 0;
 
         type = PyTokenizer_Get(tok, &a, &b);
         if (type == ERRORTOKEN) {
@@ -282,108 +272,157 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
         if (len > 0)
             strncpy(str, a, len);
         str[len] = '\0';
-	
+
 
         //printf("Before for-loop str = %s\n",str);
-        
+
         for(counter = 0, finalresult=0, nonascii=0, firstpass =1, manydigit=0; counter < len; counter++)
         {
 
-	  tempchar = str[counter];
+            if(str[counter] == -49 && str[counter+1] == -128 ) //π Operator
+            {
+                str = (char *) PyObject_MALLOC(len + 3);
+                str[manydigit++]= 51;
+                str[manydigit++]= 46;
+                str[manydigit++]= 49;
+                str[manydigit++]= 52;
+                // printf("After Pi Adjustment: str = %s\n",str );
+                type = NUMBER;
+                break;
+            }
 
-	  tempchar = tempchar & 0x000000FF;
+            else if(str[counter] == -50 && str[counter+1] == -93 ) //Σ Operator
+            {
+                /*>>> utf(931)
+                  (206, 163, None, None)
+                */
+                str = (char *) PyObject_MALLOC(len + 3);
+                str[manydigit++]= 's';
+                str[manydigit++]= 'u';
+                str[manydigit++]= 'm';
+                //printf("After Sigma Adjustment: str = %s\n",str );
+                type = 1;
+                break;
+            }
 
-	  if (tempchar < 128)
+            else if(str[counter] == -50 && str[counter+1] == -69 ) //λ Operator
+            {
+                /*>>> utf(955)
+                  (206, 187, None, None)
+                */
+                str = (char *) PyObject_MALLOC(len + 6);
+                str[manydigit++]= 'l';
+                str[manydigit++]= 'a';
+                str[manydigit++]= 'm';
+                str[manydigit++]= 'b';
+                str[manydigit++]= 'd';
+                str[manydigit++]= 'a';
+                //printf("After Lamda Adjustment: str = %s\n",str );
+                type = 1;
+                break;
+            }
+
+            else if(str[counter] == -30 && str[counter+1] == -120 && str[counter+2] == -120) //∈ Operator
+            {
+                str[manydigit++]= 'i';
+                str[manydigit++]= 'n';
+                type = 1;
+                break;
+            }
+
+            else if(str[counter] == -30 && str[counter+1] == -120) //∪ Operator
+            {
+                if(str[counter+2] == -86)
+                {
+                    str[manydigit++]= '|';
+                    type = 18;
+                    break;
+                }
+                else if(str[counter+2] == -87) //∩ Operator
+                {
+                    str[manydigit++]= '&';
+                    type = 19;
+                    break;
+                }
+            }
+
+            else if(str[0] == -30 && str[1] == -119 && str[2]==-96 )
+            {
+                str[manydigit++] = 33;
+                str[manydigit++] = 61;
+                break;
+            }
+            tempchar = str[counter];
+            tempchar = tempchar & 0x000000FF;
+
+            if (tempchar < 128)
 	    {
-	      //ASCII Value
-	      nonascii = 0;
-	      str[manydigit] = tempchar;
-	      manydigit++;
-	      
+                //ASCII Value
+                nonascii = 0;
+                str[manydigit] = tempchar;
+                manydigit++;
 	    }
-	  else if (tempchar >= 224)
+            else if (tempchar >= 224)
 	    {
-	      //printf("3 bytes in parsetok.c!\n");
-	      bytelim = 3;
-	      mask=15; //0000 1111
-      
-	      array[0] = tempchar;
-	      array[1] = str[counter+1];
-	      array[2] = str[counter+2];
-
-	      nonascii = 1;
+                //printf("3 bytes in parsetok.c!\n");
+                bytelim = 3;
+                mask=15; //0000 1111
+                array[0] = tempchar;
+                array[1] = str[counter+1];
+                array[2] = str[counter+2];
+                nonascii = 1;
 	    }
-	  else if (tempchar >= 192)
+            else if (tempchar >= 192)
 	    {
-	      //printf("2 bytes in parsetok.c!\n");
-	      bytelim = 2;
-	      mask=31; //0001 1111
-      
-	      array[0] = tempchar;
-	      array[1] = str[counter+1];
-
-	      nonascii = 1;
+                //printf("2 bytes in parsetok.c!\n");
+                bytelim = 2;
+                mask=31; //0001 1111
+                array[0] = tempchar;
+                array[1] = str[counter+1];
+                nonascii = 1;
 	    }
-	  else if (tempchar >= 128)
+            else if (tempchar >= 128)
 	    {
-	      //printf("One byte in parsetok.c!\n");
-	      //0011 1111
-      
-	      array[0] = tempchar;
-
-	      nonascii = 1;
+                //printf("One byte in parsetok.c!\n");
+                //0011 1111
+                array[0] = tempchar;
+                nonascii = 1;
 	    }
 
-	  if(nonascii == 1)
+            if(nonascii == 1)
 	    {
-	      //extract codepoint
-	      for(i=0, temp = array[0], firstpass = 1; i < bytelim-1; i++)
+                //extract codepoint
+                for(i=0, temp = array[0], firstpass = 1; i < bytelim-1; i++)
 		{
-         
-		  temp2 = array[i+1];
-      
-		  if(firstpass == 1)
+                    temp2 = array[i+1];
+                    if(firstpass == 1)
 		    {
-		      temp = temp & mask;
-		      mask = 63;
-		      firstpass = 0;
-	  
+                        temp = temp & mask;
+                        mask = 63;
+                        firstpass = 0;
 		    }
-    
-		  temp2 = temp2 & mask;		
 
-		  temp = (temp << 6) | temp2;
-
-		
-		  tempfinal = temp;
+                    temp2 = temp2 & mask;
+                    temp = (temp << 6) | temp2;
+                    tempfinal = temp;
 		}
-
-	      //printf("The codepoint in decimal in parsetok.c is %u\n", tempfinal);
-	      //printf("The codepoint in hex is in parsetok.c %x\n", tempfinal);
-
-	      finalresult = parse_uni2Num(tempfinal) + 48;
-     
-	      //printf("The value of finalresult in parsetok.c is %d\n", finalresult);
-
-	      str[manydigit] = finalresult;
-
-	      manydigit++;
-
-	      counter = counter + (bytelim - 1);
-
+                //printf("The codepoint in decimal in parsetok.c is %u\n", tempfinal);
+                //printf("The codepoint in hex is in parsetok.c %x\n", tempfinal);
+                finalresult = (int)parse_uni2Num(tempfinal) + 48;
+                //printf("The value of finalresult in parsetok.c is %d\n", finalresult);
+                str[manydigit] = finalresult;
+                manydigit++;
+                counter = counter + (bytelim - 1);
 	    }
 
         }
-
-	str[manydigit]='\0';
-	  
-
+        str[manydigit]='\0';
 	//printf("After for-loop str = %s\n",str);
-         
 
-	
 
-	
+
+
+
 #ifdef PY_PARSER_REQUIRES_FUTURE_KEYWORD
         if (type == NOTEQUAL) {
             if (!(ps->p_flags & CO_FUTURE_BARRY_AS_BDFL) &&
