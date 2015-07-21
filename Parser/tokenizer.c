@@ -1344,12 +1344,7 @@ static int uni2Num(int ch)
         ch = ch - 0x966;
         return ch;
     }
-    else if(ch >= 0x660 && ch <= 0x669) //Arabic Indic - 3 bytes
-    {
-        ch = ch - 0x660;
-        return ch;
-    }
-    else if(ch >= 0x9E6 && ch <= 0x9EF) //Bengali - 3 bytes
+   else if(ch >= 0x9E6 && ch <= 0x9EF) //Bengali - 3 bytes
     {
         ch = ch - 0x9E6;
         return ch;
@@ -1387,8 +1382,11 @@ static int unicodify(int c,int *status, struct tok_state *tok)
 
       array[0] = c;
       array[1] = tok_nextc(tok);
-      array[2] = tok_nextc(tok);
-
+      if(array[1] != 165 && array[1] != 167)
+	return array[1];
+       array[2] = tok_nextc(tok);
+      if (c< 166 || c > 175)
+	return array[2];       
       if(array[0] == 226)
       {
           if(array[1] == 137  && array[2]==160) //≠ Operator
