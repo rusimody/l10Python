@@ -1395,6 +1395,7 @@ static int unicodify(int c,int *status, struct tok_state *tok)
           {
               status = 1;
               array[0] = 33;
+              return array[0];
           }
           else if(array[1] == 136)
           {
@@ -1406,8 +1407,9 @@ static int unicodify(int c,int *status, struct tok_state *tok)
                   array[0] = 105; //dummy value
               /*else if (array[2] == 133) //
                   c=105;*/
+              return array[0];
           }
-          return array[0];
+
       }
 
     }
