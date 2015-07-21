@@ -1388,7 +1388,7 @@ static int unicodify(int c,int *status, struct tok_state *tok)
             return array[2];
     }
 
-    if(c  == 226)
+    if(c == 226)
     {
         array[1] = tok_nextc(tok);
         array[2] = tok_nextc(tok);
@@ -1423,6 +1423,12 @@ static int unicodify(int c,int *status, struct tok_state *tok)
         mask=31; //0001 1111
         array[0] = c;
         array[1] = tok_nextc(tok);
+
+        if(array[0] == 194 && array[1] == 172) //¬ aka not Operator
+        {
+            array[0] = 'n'; // dummy value
+            return array[0];
+        }
     }
     else if ( c >= 128)
     {

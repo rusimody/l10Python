@@ -240,7 +240,6 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
 	int array[3];
 	int nonascii=0;
 	int finalresult=0;
-        int flag = 0;
         int manydigit = 0;
 
         type = PyTokenizer_Get(tok, &a, &b);
@@ -275,7 +274,7 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
 
 
         //printf("Before for-loop str = %s\n",str);
-
+        //printf("type = %d\n",type);
         for(counter = 0, finalresult=0, nonascii=0, firstpass =1, manydigit=0; counter < len; counter++)
         {
 
@@ -346,27 +345,36 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
                 }
             }
 
-            else if(str[0] == -30 && str[1] == -119 && str[2]==-96 )//not equal to operator
+            else if(str[0] == -30 && str[1] == -119 && str[2]==-96 )//≠ Operator
             {
                 str[manydigit++] = '!';
                 str[manydigit++] = 61;
                 type = NOTEQUAL;
                 break;
             }
-           else if(str[0] == -30 && str[1] == -119 && str[2]==-92 )
-	     {
-                  str[manydigit++] = '<';
-                  str[manydigit++] = 61;
-                  type = 29; 
-                    break;
-             } 
-            else if(str[0] == -30 && str[1] == -119 && str[2]==-91 )
-	     {
-                  str[manydigit++] = '>';
-                  str[manydigit++] = 61;
-                  type =30;
-                    break;
-             }   
+            else if(str[0] == -30 && str[1] == -119 && str[2]==-92 )//≤ Operator
+            {
+                str[manydigit++] = '<';
+                str[manydigit++] = 61;
+                type = 29;
+                break;
+            }
+            else if(str[0] == -30 && str[1] == -119 && str[2]==-91 )//≥ Operator
+            {
+                str[manydigit++] = '>';
+                str[manydigit++] = 61;
+                type =30;
+                break;
+            }
+            else if(str[0] == -62 && str[1] == -84)//¬ aka not Operator
+            {
+                str = (char *) PyObject_MALLOC(len + 2);
+                str[manydigit++] = 'n';
+                str[manydigit++] = 'o';
+                str[manydigit++] = 't';
+                type = 1;
+                break;
+            }
             tempchar = str[counter];
             tempchar = tempchar & 0x000000FF;
 
