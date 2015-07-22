@@ -238,7 +238,7 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
 	unsigned int tempfinal=0;
 	int firstpass=1;
 	int array[3];
-	int nonascii=0;
+	int nonascii=0,flag=0;
 	int finalresult=0;
         int manydigit = 0;
 
@@ -275,9 +275,11 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
 
         //printf("Before for-loop str = %s\n",str);
         //printf("type = %d\n",type);
+       
+	if((str[counter] != 34) && (str[counter] != 39))
         for(counter = 0, finalresult=0, nonascii=0, firstpass =1, manydigit=0; counter < len; counter++)
         {
-
+	  flag=1;
             if(str[counter] == -49 && str[counter+1] == -128 ) //π Operator
             {
                 str = (char *) PyObject_MALLOC(len + 3);
@@ -439,7 +441,8 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
 	    }
 
         }
-        str[manydigit]='\0';
+        if (flag)
+	    str[manydigit]='\0';
 	//printf("After for-loop str = %s\n",str);
 
 
