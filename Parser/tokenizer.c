@@ -1384,11 +1384,11 @@ static int unicodify(int c,int *status, struct tok_state *tok)
         if(array[1] != 165 && array[1] != 167)
             return array[1];
         array[2] = tok_nextc(tok);
-        if (c< 166 || c > 175)
+        if (array[2]< 166 || array[2] > 175)
             return array[2];
     }
 
-    if(c == 226)
+  else  if(c == 226)
     {
         array[1] = tok_nextc(tok);
         array[2] = tok_nextc(tok);
