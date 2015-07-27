@@ -276,7 +276,7 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
         //printf("Before for-loop str = %s\n",str);
         //printf("type = %d\n",type);
        
-	if((str[counter] != 34) && (str[counter] != 39) && (type != 1 ))
+	if((str[counter] != 34) && (str[counter] != 39) )
         for(counter = 0, finalresult=0, nonascii=0, firstpass =1, manydigit=0; counter < len; counter++)
         {
 	  flag=1;
@@ -377,9 +377,10 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
                 type = 1;
                 break;
             }
+           
             tempchar = str[counter];
             tempchar = tempchar & 0x000000FF;
-
+	    
             if (tempchar < 128)
 	    {
                 //ASCII Value
@@ -415,7 +416,7 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
                 nonascii = 1;
 	    }
 
-            if(nonascii == 1)
+            if(nonascii == 1 && type != 1)
 	    {
                 //extract codepoint
                 for(i=0, temp = array[0], firstpass = 1; i < bytelim-1; i++)
@@ -440,6 +441,7 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
                 manydigit++;
                 counter = counter + (bytelim - 1);
 	    }
+	      
 
         }
         if (flag)
