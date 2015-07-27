@@ -276,7 +276,7 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
         //printf("Before for-loop str = %s\n",str);
         //printf("type = %d\n",type);
        
-	if((str[counter] != 34) && (str[counter] != 39))
+	if((str[counter] != 34) && (str[counter] != 39) && (type != 1 ))
         for(counter = 0, finalresult=0, nonascii=0, firstpass =1, manydigit=0; counter < len; counter++)
         {
 	  flag=1;
@@ -386,6 +386,7 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
                 nonascii = 0;
                 str[manydigit] = tempchar;
                 manydigit++;
+                 
 	    }
             else if (tempchar >= 224)
 	    {

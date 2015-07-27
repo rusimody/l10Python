@@ -1469,7 +1469,7 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
     struct tok_state ahead_tok;
     char *ahead_tok_start = NULL, *ahead_top_end = NULL;
     int ahead_tok_kind;
-    int status = 0;//  ≠ operator.
+    int status = 0,invar=0;//  ≠ operator.
 
     *p_start = *p_end = NULL;
   nextline:
@@ -1593,12 +1593,13 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
 
     /* Identifier (most frequent token!) */
     nonascii = 0;
-
+    if(!invar)
     c = unicodify(c,&status,tok);
 
     if (is_potential_identifier_start(c)) {
         /* Process b"", r"", u"", br"" and rb"" */
         int saw_b = 0, saw_r = 0, saw_u = 0;
+	
         while (1) {
             if (!(saw_b || saw_u) && (c == 'b' || c == 'B'))
                 saw_b = 1;
@@ -1617,7 +1618,10 @@ tok_get(struct tok_state *tok, char **p_start, char **p_end)
         }
         while (is_potential_identifier_char(c)) {
             if (c >= 128)
+	      {
                 nonascii = 1;
+		invar=1;
+              }
             c = tok_nextc(tok);
         }
         tok_backup(tok, c);
